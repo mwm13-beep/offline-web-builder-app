@@ -1,19 +1,9 @@
 import React, { useState } from 'react';
 import { ResizableBox } from 'react-resizable'
 import 'react-resizable/css/styles.css';
-
-type Props = {
-    x: number;
-    y: number;
-    children: React.ReactNode;
-    canvasWidth: number;
-    canvasHeight: number;
-    width?: number;
-    height?: number;
-  };
+import type { DraggableBoxProps } from "./types";
   
-
-export default function DraggableBox({ x, y, children, width, height, canvasWidth, canvasHeight }: Props) {
+export default function DraggableBox({ x, y, children, width, height, canvasWidth, canvasHeight, onResize }: DraggableBoxProps) {
   const [position, setPosition] = useState({ x, y });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -46,26 +36,31 @@ export default function DraggableBox({ x, y, children, width, height, canvasWidt
       window.removeEventListener("mouseup", onMouseUp);
     };
   });
-
   return (
-    <ResizableBox width={width} height={height} minConstraints={[50, 30]} maxConstraints={[canvasWidth, canvasHeight]}>
-        <div
-        onMouseDown={onMouseDown}
-        style={{
-            position: "absolute",
-            left: position.x,
-            top: position.y,
-            cursor: "grab",
-            border: "1px dashed #aaa",
-            backgroundColor: "#eee",
-            padding: 8,
-            width: width ?? 100,
-            height: height ?? 50,
-            userSelect: "none",
-        }}      
-        >
+    <ResizableBox
+      width={width}
+      height={height}
+      minConstraints={[50, 30]}
+      maxConstraints={[canvasWidth, canvasHeight]}
+      onResizeStop={(e, data) => {
+        const newWidth = data.size.width;
+        const newHeight = data.size.height;
+        onResize(newWidth, newHeight);
+      }}
+      style={{
+        position: "absolute",
+        left: position.x,
+        top: position.y,
+        border: "1px dashed #aaa",
+        backgroundColor: "#eee",
+        padding: 8,
+        userSelect: "none",
+        cursor: "grab",
+      }}
+    >
+      <div onMouseDown={onMouseDown} style={{ width: "100%", height: "100%" }}>
         {children}
-        </div>
+      </div>
     </ResizableBox>
-  );
+  );  
 }
