@@ -6,16 +6,12 @@ import { createDefaultElement } from "./types";
 import { preloadImage, processImage } from "../utils/image";
 import React from 'react';
 import { handler } from "../handlers/handlerMap";
+import CustomContextMenu from '../components/ContextMenu';
 
 export default function CanvasArea() {
   const [elements, setElements] = useState<ElementData[]>([]);
   const [defaultImage, setDefaultImage] = useState<HTMLImageElement>();
-  const [contextMenu, setContextMenu] = useState<{ x:number, y:number } | null>(null);
   const defaultImagePath = "/assets/image.jpg";
-
-  function handleContextMenu(e: React.MouseEvent){
-
-  }
 
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -70,9 +66,22 @@ export default function CanvasArea() {
     setElements(prev => [...prev, newElement]);
   }
 
-  function renderContent(type: string | undefined, src: string | undefined, width: number, height: number) {
+  function renderContent(type: string | undefined, src: string | undefined, text: string | undefined, width: number, height: number) {
     if (type === "img") {
       return <img src={src} style={{ width: width || 100, height: height || 50, objectFit: "contain" }} draggable={false}/>;
+    }
+    else if (type === "p") {
+      return <p
+      contentEditable
+      style={{
+        minWidth: 100,
+        minHeight: 50,
+        width: "100%",
+        height: "100%",
+        overflow: "auto",
+      }}>
+        {text}
+      </p>
     }
     return (
       <div
@@ -90,6 +99,25 @@ export default function CanvasArea() {
     );
   }
 
+  function handlePaste(e: ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+  
+    const canvas = document.querySelector(".canvas")?.getBoundingClientRect();
+    if (!canvas) return;
+  
+    for (const item of items) {
+      if (handler({
+        data: item,
+        canvas: canvas,
+        createElement: (element) => { setElements((prev) => [...prev, element]) }
+      })) {
+        return; //only paste the first match
+      } 
+    }
+    console.warn("⚠️ Unsupported paste content.");
+  }
+  
   React.useEffect(() => {
     preloadImage("/assets/image.jpg")
       .then(img => {
@@ -99,29 +127,15 @@ export default function CanvasArea() {
       .catch(err => {
         console.error(err.message);
       });
-
-      const handlePaste = (e: ClipboardEvent) => {
-        const items = e.clipboardData?.items;
-        if (!items) return;
-      
-        const canvas = document.querySelector(".canvas")?.getBoundingClientRect();
-        if (!canvas) return;
-      
-        for (const item of items) {
-          if (handler({
-            data: item,
-            canvas: canvas,
-            createElement: (element) => { setElements((prev) => [...prev, element]) }
-          })) {
-            return;
-          } 
-        }
-        console.warn("⚠️ Unsupported paste content.");
-      };
-      
-      window.addEventListener("paste", handlePaste);
-      return () => window.removeEventListener("paste", handlePaste);
   }, []);
+
+  React.useEffect(() => {
+    window.addEventListener("paste", handlePaste);
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, []);
+  
 
   return (
     <div
@@ -129,7 +143,8 @@ export default function CanvasArea() {
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      {elements.map(({ type, x, y, src, width, height, canvasWidth, canvasHeight }, i) => (
+      <CustomContextMenu />;
+      {elements.map(({ type, x, y, src, text, width, height, canvasWidth, canvasHeight }, i) => (
         <DraggableBox
           key={i}
           x={x}
@@ -150,7 +165,7 @@ export default function CanvasArea() {
             });
           }}
         >
-        {renderContent(type, src, width, height)}
+        {renderContent(type, src, text, width, height)}
         </DraggableBox>            
       ))}
     </div>

@@ -2,14 +2,12 @@ import { ElementData } from "../components/types";
 import { processImage } from "../utils/image";
 
 export function handleImageFile(opts: {
-    kind: "image",
-    data: File,
+    data: File | DataTransferItem,
     canvas: DOMRect,
     createElement: (e: ElementData) => void
-}) {
-    if (opts.kind !== "image") return;
-    
+}) {    
     const { data, canvas, createElement } = opts;
+
     const reader = new FileReader();
     
     reader.onload = () => {
@@ -34,9 +32,20 @@ export function handleImageFile(opts: {
         img.src = src; // trigger the onload function defined above
     };
 
+    if (data instanceof DataTransferItem) {
+       const file = data.getAsFile();
+       if (file != null) {
+        reader.readAsDataURL(file); 
+       }
+       else {
+        console.error(`Cannot read null file: ${file}`)
+       }
+    }
+    else {
+            reader.readAsDataURL(data);
+    }
+    
     reader.onerror = () => {
         console.error("Failed to read image file.");
     };
-
-    reader.readAsDataURL(data);
 }
