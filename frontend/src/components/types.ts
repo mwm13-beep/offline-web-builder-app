@@ -4,6 +4,7 @@ export type ElementData = {
   type?: string;
   x: number;
   y: number;
+  text?: string;
   src?: string;
   width: number;
   height: number;
@@ -21,7 +22,8 @@ export const createDefaultElement = (
     type,
     x,
     y,
-    src: type === "img" ? "/assets/image.jpg" : undefined,
+    text: "",
+    src: "",
     width: 100,
     height: 50,
     canvasWidth,

@@ -9,3 +9,20 @@ export function preloadImage(src: string): Promise<HTMLImageElement> {
     });
   }
   
+export function processImage(
+    img: HTMLImageElement,
+    canvas: DOMRect
+    ): { width: number; height: number } {
+    const maxW = canvas.width * 0.5;
+    const maxH = canvas.height * 0.5;
+
+    const widthRatio = maxW / img.width;
+    const heightRatio = maxH / img.height;
+    const ratio = Math.min(widthRatio, heightRatio, 1);
+
+    return {
+        width: img.width * ratio,
+        height: img.height * ratio,
+    };
+}
+  
