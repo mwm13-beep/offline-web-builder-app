@@ -6,7 +6,7 @@ import { createDefaultElement } from "./types";
 import { preloadImage, processImage } from "../utils/image";
 import React from 'react';
 import { handler } from "../handlers/handlerMap";
-import CustomContextMenu from '../components/ContextMenu';
+import CustomContextMenu from './ContextMenu';
 
 export default function CanvasArea() {
   const [elements, setElements] = useState<ElementData[]>([]);
@@ -118,6 +118,30 @@ export default function CanvasArea() {
     console.warn("⚠️ Unsupported paste content.");
   }
   
+  async function handleContextPaste() {
+    try {
+        const canvas = document.querySelector(".canvas")?.getBoundingClientRect();
+        if (!canvas) return;
+
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          for (const type of item.types) {
+              const blob = await item.getType(type);
+              const success = handler({
+                  data: blob,
+                  canvas: canvas,
+                  createElement: (element) =>
+                      setElements((prev) => [...prev, element]),
+              });
+              if (success) return;
+          }
+        }
+        console.warn("❗ Unsupported clipboard content.");
+    } catch (err) {
+        console.error("Clipboard read error:", err);
+    }
+  }
+  
   React.useEffect(() => {
     preloadImage("/assets/image.jpg")
       .then(img => {
@@ -143,7 +167,7 @@ export default function CanvasArea() {
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      <CustomContextMenu />;
+      <CustomContextMenu onPaste={handleContextPaste}/>
       {elements.map(({ type, x, y, src, text, width, height, canvasWidth, canvasHeight }, i) => (
         <DraggableBox
           key={i}
@@ -165,7 +189,7 @@ export default function CanvasArea() {
             });
           }}
         >
-        {renderContent(type, src, text, width, height)}
+        { renderContent(type, src, text, width, height) }
         </DraggableBox>            
       ))}
     </div>

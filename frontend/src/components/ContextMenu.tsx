@@ -1,31 +1,10 @@
 import * as ContextMenu from '@radix-ui/react-context-menu';
-import { handler } from '../handlers/handlerMap';
 
-async function handleContextPaste() {
-    try {
-        const canvas = document.querySelector(".canvas")?.getBoundingClientRect();
-        if (!canvas) return;
-
-        const clipboardItems = await navigator.clipboard.read();
-        for (const item of clipboardItems) {
-        for (const type of item.types) {
-            const blob = await item.getType(type);
-            const success = handler({
-                data: blob,
-                canvas: canvas,
-                createElement: (element) =>
-                    setElements((prev) => [...prev, element]),
-            });
-            if (success) return;
-        }
-        }
-        console.warn("❗ Unsupported clipboard content.");
-    } catch (err) {
-        console.error("Clipboard read error:", err);
-    }
+type ContextMenuProps = {
+    onPaste: () => void;
 }
 
-export default function CustomContextMenu() {
+export default function CustomContextMenu({ onPaste }: ContextMenuProps) {
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>
@@ -36,10 +15,8 @@ export default function CustomContextMenu() {
 
       <ContextMenu.Content
         className="radix-context-menu"
-        sideOffset={5}
-        align="start"
       >
-        <ContextMenu.Item className="menu-item" onSelect={handleContextPaste}>
+        <ContextMenu.Item className="menu-item" onSelect={onPaste}>
           Paste
         </ContextMenu.Item>
         {/* Add more items as needed */}

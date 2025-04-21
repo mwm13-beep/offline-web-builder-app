@@ -2,7 +2,7 @@ import { ElementData } from "../components/types";
 import { processImage } from "../utils/image";
 
 export function handleImageFile(opts: {
-    data: File | DataTransferItem,
+    data: File | DataTransferItem | Blob,
     canvas: DOMRect,
     createElement: (e: ElementData) => void
 }) {    
@@ -29,20 +29,20 @@ export function handleImageFile(opts: {
             createElement(newElement);
         };
 
-        img.src = src; // trigger the onload function defined above
+        img.src = src; // will trigger the onload function defined above
     };
 
     if (data instanceof DataTransferItem) {
-       const file = data.getAsFile();
-       if (file != null) {
-        reader.readAsDataURL(file); 
-       }
-       else {
-        console.error(`Cannot read null file: ${file}`)
-       }
+        const file = data.getAsFile();
+        if (file != null) {
+            reader.readAsDataURL(file); 
+        }
+    }
+    else if (data instanceof Blob) {
+        reader.readAsDataURL(data);
     }
     else {
-            reader.readAsDataURL(data);
+        reader.readAsDataURL(data);
     }
     
     reader.onerror = () => {

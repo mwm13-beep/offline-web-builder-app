@@ -47,3 +47,22 @@ html, body, #root {
   border-left: 1px solid #444; /* optional */
   box-sizing: border-box;
 }
+
+/* Context Menu */
+.radix-context-menu {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 4px 0;
+  border-radius: 4px;
+  min-width: 100px;
+  z-index: 999;
+}
+
+.menu-item {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: #eee;
+}
