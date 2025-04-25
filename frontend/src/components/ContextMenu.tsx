@@ -8,9 +8,7 @@ export default function CustomContextMenu({ onPaste }: ContextMenuProps) {
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger asChild>
-        <div className="canvas" style={{ width: '100%', height: '100vh' }}>
-          Right-click anywhere
-        </div>
+        <div className="canvas" style={{ width: '100%', height: '100vh' }}></div>
       </ContextMenu.Trigger>
 
       <ContextMenu.Content
