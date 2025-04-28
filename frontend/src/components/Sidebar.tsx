@@ -1,5 +1,7 @@
 // Sidebar.tsx
-const elements = ["div", "img", "p"];
+import { ELEMENT_DEFINITIONS, getElementLabel } from "./elements/renderDefinitions";
+
+const elements = Object.keys(ELEMENT_DEFINITIONS);
 
 export default function Sidebar() {
   return (
@@ -12,7 +14,7 @@ export default function Sidebar() {
           onDragStart={(e) => e.dataTransfer.setData("text/plain", el)}
           style={{ border: "1px solid #888", margin: "5px", padding: "4px" }}
         >
-          {el}
+          {getElementLabel(el)}
         </div>
       ))}
     </div>

@@ -1,6 +1,7 @@
 import { ElementData } from "../components/types";
 import { handleImageFile } from "./imageHandler";
 import { handleTextContent } from "./textHandler";
+import { TYPE_MAPPINGS } from "../components/elements/typeMappings";
 
 type HandlerFunction = (opts: {
     data: any;
@@ -8,11 +9,13 @@ type HandlerFunction = (opts: {
     createElement: (e: ElementData) => void;
   }) => void;
   
-const handlerMap: Record<string, HandlerFunction> = {
-    image: handleImageFile,
-    text: handleTextContent,
-    // add more handlers here later
-};
+  const handlerMap: Record<string, HandlerFunction> = {};
+
+  handlerMap[TYPE_MAPPINGS["text/"]] = handleTextContent;
+  handlerMap[TYPE_MAPPINGS["image/"]] = handleImageFile;
+  
+  // add more handlers here later
+  
   
 // overloads
 function getDataType(input: File): string;
@@ -20,29 +23,26 @@ function getDataType(input: DataTransferItem): string;
 function getDataType(input: string): string;
 function getDataType(input: Blob): string;
 
-// implementation
 function getDataType(input: any): string {
-  // string check
-  if (typeof input === "string") return "text";
-  
-  // DataTransferItem
+  if (typeof input === "string") return TYPE_MAPPINGS["text/"];
+
   if (typeof DataTransferItem !== "undefined" && input instanceof DataTransferItem) {
-      if (input.type.startsWith("text/")) return "text";
-      if (input.type.startsWith("image/")) return "image";
+    for (const prefix in TYPE_MAPPINGS) {
+      if (input.type.startsWith(prefix)) {
+        return TYPE_MAPPINGS[prefix];
+      }
+    }
   }
 
-  // File
-  if (input instanceof File) {
-      if (input.type.startsWith("image/")) return "image";
+  if (input instanceof File || input instanceof Blob) {
+    for (const prefix in TYPE_MAPPINGS) {
+      if (input.type.startsWith(prefix)) {
+        return TYPE_MAPPINGS[prefix];
+      }
+    }
   }
 
-  // Blob (used in navigator.clipboard.read())
-  if (input instanceof Blob) {
-    if (input.type.startsWith("image/")) return "image";
-    if (input.type.startsWith("text/")) return "text";
-  }
-
-  return ""
+  return "";
 }
 
 export function handler(opts: {

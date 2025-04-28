@@ -1,4 +1,5 @@
 import { ElementData  } from "../components/types";
+import { TYPE_MAPPINGS } from "../components/elements/typeMappings";
 
 export function handleTextContent(opts: {
   data: string | DataTransferItem | Blob,
@@ -11,7 +12,7 @@ export function handleTextContent(opts: {
 
   const create = (text: string) => {
       const newElement: ElementData = {
-        type: "p",
+        type: TYPE_MAPPINGS["/text"],
         x: canvas.left,
         y: canvas.top,
         text,

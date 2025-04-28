@@ -7,6 +7,7 @@ import { preloadImage, processImage } from "../utils/image";
 import React from 'react';
 import { handler } from "../handlers/handlerMap";
 import CustomContextMenu from './ContextMenu';
+import { ELEMENT_DEFINITIONS, getElementDefinition, isImageElement } from './elements/renderDefinitions';
 
 export default function CanvasArea() {
   const [elements, setElements] = useState<ElementData[]>([]);
@@ -57,7 +58,7 @@ export default function CanvasArea() {
 
     const newElement = createDefaultElement(type, x, y, canvas.width, canvas.height);
     
-    if (type === "img" && defaultImage) {
+    if (isImageElement(type) && defaultImage) {
         const { width, height } = processImage(defaultImage, canvas)
         newElement.width = width;
         newElement.height = height;
@@ -66,37 +67,16 @@ export default function CanvasArea() {
     setElements(prev => [...prev, newElement]);
   }
 
-  function renderContent(type: string | undefined, src: string | undefined, text: string | undefined, width: number, height: number) {
-    if (type === "img") {
-      return <img src={src} style={{ width: width || 100, height: height || 50, objectFit: "contain" }} draggable={false}/>;
-    }
-    else if (type === "p") {
-      return <p
-      contentEditable
-      style={{
-        minWidth: 100,
-        minHeight: 50,
-        width: "100%",
-        height: "100%",
-        overflow: "auto",
-      }}>
-        {text}
-      </p>
+  function renderContent(type: string, props: any) {
+    const definition = getElementDefinition(type);
+    if (definition) {
+      return definition.render(props);
     }
     return (
-      <div
-        contentEditable
-        style={{
-          minWidth: 100,
-          minHeight: 50,
-          width: "100%",
-          height: "100%",
-          overflow: "auto",
-        }}
-      >
-        {type}
+      <div style={{ border: "1px solid red", padding: "4px" }}>
+        Unknown Element
       </div>
-    );
+    );    
   }
 
   function handlePaste(e: ClipboardEvent) {
@@ -189,7 +169,7 @@ export default function CanvasArea() {
             });
           }}
         >
-        { renderContent(type, src, text, width, height) }
+        {(type && type in ELEMENT_DEFINITIONS) ? renderContent(type, { src, text, width, height }) : null}
         </DraggableBox>            
       ))}
     </div>

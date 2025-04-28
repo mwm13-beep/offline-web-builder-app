@@ -1,5 +1,6 @@
 import { ElementData } from "../components/types";
 import { processImage } from "../utils/image";
+import { TYPE_MAPPINGS } from "../components/elements/typeMappings";
 
 export function handleImageFile(opts: {
     data: File | DataTransferItem | Blob,
@@ -17,7 +18,7 @@ export function handleImageFile(opts: {
         img.onload = () => {
         const { width, height } = processImage(img, canvas);
             const newElement: ElementData = {
-            type: "img",
+            type: TYPE_MAPPINGS["image/"],
             x: canvas.left,
             y: canvas.top,
             width: width,
