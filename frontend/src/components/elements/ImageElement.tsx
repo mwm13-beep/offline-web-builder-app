@@ -1,8 +1,10 @@
-import { ElementProps } from "./renderDefinitions";
+import { RenderableElementProps, ElementDefinition } from "./elementTypes";
+import { registerElement } from "./ElementRegistry";
 
-export const ImageElement = {
+export const ImageElement: ElementDefinition = {
     label: "Image",
-    render: (props: ElementProps) => (
+    defaultText: "Image",
+    render: (props: RenderableElementProps) => (
       <img
         src={props.src}
         style={{
@@ -13,4 +15,12 @@ export const ImageElement = {
         draggable={false}
       />
     ),
+    getContextMenuItems: (props: RenderableElementProps) => [
+      {
+        label: "Example Action",
+        onSelect: () => alert("Action triggered"),
+      },
+    ],
 };
+
+registerElement("Image", ImageElement);

@@ -1,7 +1,8 @@
 // Sidebar.tsx
-import { ELEMENT_DEFINITIONS, getElementLabel } from "./elements/renderDefinitions";
+import { getElementLabel } from "./elements/elementUtils";
+import { getAllElementDefinitions } from "./elements/ElementRegistry"
 
-const elements = Object.keys(ELEMENT_DEFINITIONS);
+const elements = Object.keys(getAllElementDefinitions());
 
 export default function Sidebar() {
   return (

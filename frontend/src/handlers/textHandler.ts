@@ -1,17 +1,17 @@
-import { ElementData  } from "../components/types";
-import { TYPE_MAPPINGS } from "../components/elements/typeMappings";
+import { CanvasElementData  } from "../components/types";
+import { TYPE_MAPPINGS } from "../components/elements/mimeToElementMappings";
 
 export function handleTextContent(opts: {
   data: string | DataTransferItem | Blob,
   canvas: DOMRect,
-  createElement: (e: ElementData) => void
+  createElement: (e: CanvasElementData) => void
 }) {
   const { data, canvas, createElement } = opts;
   const maxW = canvas.width * 0.5;
   const maxH = canvas.height * 0.5;
 
   const create = (text: string) => {
-      const newElement: ElementData = {
+      const newElement: CanvasElementData = {
         type: TYPE_MAPPINGS["/text"],
         x: canvas.left,
         y: canvas.top,

@@ -1,19 +1,24 @@
 // CanvasArea.tsx
 import { useState } from 'react';
-import { ElementData } from "./types";
+import { CanvasElementData } from "./types";
 import DraggableBox from './DraggableBox';
-import { createDefaultElement } from "./types";
+import { ContextMenuItem } from "./types";
 import { preloadImage, processImage } from "../utils/image";
 import React from 'react';
 import { handler } from "../handlers/handlerMap";
 import CustomContextMenu from './ContextMenu';
-import { ELEMENT_DEFINITIONS, getElementDefinition, isImageElement } from './elements/renderDefinitions';
+import { getContextMenuItems } from './contextMenuMappings';
+import { createDefaultElement, isImageElement } from './elements/elementUtils';
+import { getElementDefinition } from './elements/ElementRegistry';
 
 export default function CanvasArea() {
-  const [elements, setElements] = useState<ElementData[]>([]);
+  //canvas properties
+  const [elements, setElements] = useState<CanvasElementData[]>([]);
   const [defaultImage, setDefaultImage] = useState<HTMLImageElement>();
+  const [contextMenuItems, setContextMenuItems] = useState<ContextMenuItem[]>([]);
   const defaultImagePath = "/assets/image.jpg";
 
+  //functions
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
   
@@ -97,31 +102,93 @@ export default function CanvasArea() {
     }
     console.warn("⚠️ Unsupported paste content.");
   }
+
+  function handleRightClick(e: React.MouseEvent) {
+    e.preventDefault();
+
+    let target = e.target as HTMLElement;
+    const elementBox = target.closest(".draggable-box") as HTMLElement | null;
+
+    if(elementBox) {
+      const index = elementBox.dataset.index !== undefined ? parseInt(elementBox.dataset.index) : -1;    
+      const element = index >= 0 && index < elements.length ? elements[index] : undefined;
+      if (element && element.type) {
+        const menu = getContextMenuItems(element.type, element);
+        setContextMenuItems(menu);
+        return;
+      }
+    }
+
+    setContextMenuItems([
+      {
+        label: "Paste",
+        onSelect: handleContextPaste
+      }
+    ]);
+  }
+
+  //async functions
+  async function tryParseImage(blob: Blob): Promise<HTMLImageElement | null> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(blob);
   
+      img.onload = () => {
+        URL.revokeObjectURL(url);  // <-- Revoke *after* successful load
+        resolve(img);
+      };
+      img.onerror = (event) => {
+        console.error("Image failed to load", event);
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };      
+  
+      img.src = url;
+    });
+  }
+
   async function handleContextPaste() {
     try {
-        const canvas = document.querySelector(".canvas")?.getBoundingClientRect();
-        if (!canvas) return;
+      const canvas = document.querySelector(".canvas")?.getBoundingClientRect();
+      if (!canvas) return;
 
-        const clipboardItems = await navigator.clipboard.read();
-        for (const item of clipboardItems) {
-          for (const type of item.types) {
-              const blob = await item.getType(type);
-              const success = handler({
-                  data: blob,
-                  canvas: canvas,
-                  createElement: (element) =>
-                      setElements((prev) => [...prev, element]),
-              });
-              if (success) return;
+      const clipboardItems = await navigator.clipboard.read();
+
+      for (const item of clipboardItems) {
+
+        for (const type of item.types) {
+          const blob = await item.getType(type);
+          const maybeImage = await tryParseImage(blob);
+          
+          if (maybeImage) {
+            // It's actually an image!
+            const success = handler({
+              data: blob,
+              canvas,
+              createElement: (element) => {
+                setElements((prev) => [...prev, element]);
+              },
+            });
+            if (success) return;
           }
+          
+          // If not an image, fallback to original text handling
+          const success = handler({
+            data: blob,
+            canvas,
+            createElement: (element) => {
+              setElements((prev) => [...prev, element]);
+            },
+          });
+          if (success) return;
         }
-        console.warn("❗ Unsupported clipboard content.");
+      }
     } catch (err) {
         console.error("Clipboard read error:", err);
     }
   }
   
+  //useEffects
   React.useEffect(() => {
     preloadImage("/assets/image.jpg")
       .then(img => {
@@ -140,38 +207,66 @@ export default function CanvasArea() {
     };
   }, []);
   
-
+  //TSX structure
   return (
     <div
       className="canvas"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
+      onContextMenu={handleRightClick}
     >
-      <CustomContextMenu onPaste={handleContextPaste}/>
-      {elements.map(({ type, x, y, src, text, width, height, canvasWidth, canvasHeight }, i) => (
-        <DraggableBox
-          key={i}
-          x={x}
-          y={y}
-          canvasWidth={canvasWidth}
-          canvasHeight={canvasHeight}
-          width={width}
-          height={height}
-          onResize={(newWidth, newHeight) => {
-            setElements((prev) => {
+      <CustomContextMenu menuItems={contextMenuItems}>
+        {elements.map((element, i) => {
+          const { type, x, y, src, text, width, height, canvasWidth, canvasHeight, editing } = element;
+
+          const updateElement = (newProps: Partial<typeof element>) => {
+            setElements(prev => {
               const updated = [...prev];
               updated[i] = {
-                ...updated[i],
-                width: newWidth,
-                height: newHeight,
+                ...updated[i], 
+                ...newProps
               };
               return updated;
             });
-          }}
-        >
-        {(type && type in ELEMENT_DEFINITIONS) ? renderContent(type, { src, text, width, height }) : null}
-        </DraggableBox>            
-      ))}
+          };
+          
+          return (
+            <DraggableBox
+              key={i}
+              x={x}
+              y={y}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+              editing={editing}
+              width={width}
+              height={height}
+              onResize={(newWidth, newHeight) => {
+                setElements((prev) => {
+                  const updated = [...prev];
+                  updated[i] = {
+                    ...updated[i],
+                    width: newWidth,
+                    height: newHeight,
+                  };
+                  return updated;
+                });
+              }}
+              data-index={i}
+            >
+            {(type && getElementDefinition(type)) 
+              ? renderContent(type, { 
+                src, 
+                text, 
+                width, 
+                height,
+                updateElement,
+                editing,
+              }) 
+            : null}
+          </DraggableBox>  
+          )
+        })}
+      </CustomContextMenu>
     </div>
   );
 }

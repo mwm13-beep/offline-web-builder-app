@@ -1,12 +1,12 @@
-import { ElementData } from "../components/types";
+import { CanvasElementData } from "../components/types";
 import { handleImageFile } from "./imageHandler";
 import { handleTextContent } from "./textHandler";
-import { TYPE_MAPPINGS } from "../components/elements/typeMappings";
+import { TYPE_MAPPINGS } from "../components/elements/mimeToElementMappings";
 
 type HandlerFunction = (opts: {
     data: any;
     canvas: DOMRect;
-    createElement: (e: ElementData) => void;
+    createElement: (e: CanvasElementData) => void;
   }) => void;
   
   const handlerMap: Record<string, HandlerFunction> = {};
@@ -48,7 +48,7 @@ function getDataType(input: any): string {
 export function handler(opts: {
   data: any;
   canvas: DOMRect;
-  createElement: (e: ElementData) => void;
+  createElement: (e: CanvasElementData) => void;
 }): boolean {
   const { data, canvas, createElement } = opts;
 

@@ -1,11 +1,11 @@
-import { ElementData } from "../components/types";
+import { CanvasElementData } from "../components/types";
 import { processImage } from "../utils/image";
-import { TYPE_MAPPINGS } from "../components/elements/typeMappings";
+import { TYPE_MAPPINGS } from "../components/elements/mimeToElementMappings";
 
 export function handleImageFile(opts: {
     data: File | DataTransferItem | Blob,
     canvas: DOMRect,
-    createElement: (e: ElementData) => void
+    createElement: (e: CanvasElementData) => void
 }) {    
     const { data, canvas, createElement } = opts;
 
@@ -17,7 +17,7 @@ export function handleImageFile(opts: {
 
         img.onload = () => {
         const { width, height } = processImage(img, canvas);
-            const newElement: ElementData = {
+            const newElement: CanvasElementData = {
             type: TYPE_MAPPINGS["image/"],
             x: canvas.left,
             y: canvas.top,

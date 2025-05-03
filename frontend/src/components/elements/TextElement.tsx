@@ -1,9 +1,10 @@
-import { ElementProps } from "./renderDefinitions";
+import { RenderableElementProps, ElementDefinition } from "./elementTypes";
+import { registerElement } from "./ElementRegistry";
 
-export const TextElement = {
+export const TextElement:ElementDefinition  = {
     label: "Text",
     defaultText: "Editable text",
-    render: (props: ElementProps) => (
+    render: (props: RenderableElementProps) => (
         <p
         contentEditable
         style={{
@@ -17,4 +18,12 @@ export const TextElement = {
             {props.text}
         </p>
     ),
+    getContextMenuItems: (props: RenderableElementProps) => [
+        {
+          label: "Example Action",
+          onSelect: () => alert("Action triggered"),
+        },
+      ],
 };
+
+registerElement("Text", TextElement);

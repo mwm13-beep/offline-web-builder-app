@@ -1,0 +1,27 @@
+Timeframe,Task,Purpose
+Week 1,Set up OS detection for clipboard handling,Learning + light coding
+Week 1,Add macOS clipboard paste support,Handles image copy issues
+Week 1,Implement macOS paste failure alert modal,Better UX for clipboard issues
+Week 1,Implement 'Delete' option in context menu,Allow deleting canvas elements
+Week 2,Add Windows clipboard paste support,Expand support
+Week 2,Add Linux clipboard paste support (VM setup),Expand support
+Week 2,Refactor clipboard handlers into utils/clipboard.ts,Code organization
+Week 2,Create basic page management system,Multi-page project support
+Week 3,Implement multi-page save/load system (basic),Extend save JSON structure
+Week 3,Refactor sidebar elements to text/image/button initially,Simple elements refactor
+Week 3,Add basic static site exporter,Export single-page sites
+Week 4,Implement secure API Key Manager (Electron backend),User inputs keys safely
+Week 4,Encrypt API keys in memory during session,Security hardening
+Week 4,Implement Firebase cloud saving via backend,First cloud integration
+Week 4,Implement Google Drive cloud saving via backend,Second cloud integration
+Week 5,Implement AWS S3 cloud saving via backend,Third cloud integration
+Week 5,Build basic cloud deployment automation for Firebase,One-click deploy
+Week 5,Build basic cloud deployment automation for Vercel,One-click deploy
+Week 6,Add template selection at project creation,Default templates
+Week 6,Add ability for users to create/save their own templates,Custom templates
+Week 6,Improve canvas scrolling for large pages,Viewport-like behavior
+Week 6,Add simple tooltip system for UI guidance,First step toward docs
+Future,Add encrypted password protection for unlocking API keys,Extra layer for critical users
+Future,Expand static exporter to full multi-page support,Complete SSG export
+Future,Expand cloud deploy automation to AWS Amplify,More platforms
+Future,Add glossary/help search and chatbot,Full help system
