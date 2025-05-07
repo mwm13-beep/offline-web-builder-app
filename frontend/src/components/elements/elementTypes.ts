@@ -10,12 +10,12 @@ export type RenderableElementProps = {
   };
   
 export interface ElementDefinition {
-label: string;
-defaultText: string;
-render: (
-    props: RenderableElementProps & { updateElement?: (patch: Partial<RenderableElementProps>) => void }
-) => JSX.Element;
-getContextMenuItems: (
-    props: RenderableElementProps & { updateElement?: (patch: Partial<RenderableElementProps>) => void }
-) => ContextMenuItem[];
+    label: string;
+    defaultText: string;
+    render: (
+        props: RenderableElementProps & { updateElement?: (patch: Partial<RenderableElementProps>) => void }
+    ) => JSX.Element;
+    getContextMenuItems: (
+        props: RenderableElementProps & { updateElement?: (patch: Partial<RenderableElementProps>) => void }
+    ) => ContextMenuItem[];
 }

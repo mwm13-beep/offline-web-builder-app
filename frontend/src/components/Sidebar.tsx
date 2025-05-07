@@ -1,10 +1,16 @@
 // Sidebar.tsx
 import { getElementLabel } from "./elements/elementUtils";
 import { getAllElementDefinitions } from "./elements/ElementRegistry"
-
-const elements = Object.keys(getAllElementDefinitions());
+import { useEffect, useState } from "react";
 
 export default function Sidebar() {
+  const [elements, setElements] = useState<string[]>([]);
+
+  useEffect(() => {
+    const keys = Object.keys(getAllElementDefinitions());
+    setElements(keys);
+  }, []);
+
   return (
     <div className="sidebar">
       <h2>Elements</h2>

@@ -1,22 +1,23 @@
 // CanvasArea.tsx
-import { useState } from 'react';
 import { CanvasElementData } from "./types";
 import DraggableBox from './DraggableBox';
-import { ContextMenuItem } from "./types";
 import { preloadImage, processImage } from "../utils/image";
-import React from 'react';
+import React, { useState } from 'react';
 import { handler } from "../handlers/handlerMap";
-import CustomContextMenu from './ContextMenu';
 import { getContextMenuItems } from './contextMenuMappings';
 import { createDefaultElement, isImageElement } from './elements/elementUtils';
 import { getElementDefinition } from './elements/ElementRegistry';
+import { Menu, Item, useContextMenu } from "react-contexify";
+import "react-contexify/dist/ReactContexify.css"; // Required stylesheet
 
 export default function CanvasArea() {
   //canvas properties
   const [elements, setElements] = useState<CanvasElementData[]>([]);
   const [defaultImage, setDefaultImage] = useState<HTMLImageElement>();
-  const [contextMenuItems, setContextMenuItems] = useState<ContextMenuItem[]>([]);
+  const [contextData, setContextData] = useState<any>(null);
   const defaultImagePath = "/assets/image.jpg";
+  const MENU_ID = "canvas-context-menu";
+  const { show } = useContextMenu({ id: MENU_ID });
 
   //functions
   function handleDrop(e: React.DragEvent) {
@@ -105,27 +106,35 @@ export default function CanvasArea() {
 
   function handleRightClick(e: React.MouseEvent) {
     e.preventDefault();
-
-    let target = e.target as HTMLElement;
-    const elementBox = target.closest(".draggable-box") as HTMLElement | null;
-
-    if(elementBox) {
-      const index = elementBox.dataset.index !== undefined ? parseInt(elementBox.dataset.index) : -1;    
-      const element = index >= 0 && index < elements.length ? elements[index] : undefined;
-      if (element && element.type) {
-        const menu = getContextMenuItems(element.type, element);
-        setContextMenuItems(menu);
-        return;
+  
+    const target = e.target as HTMLElement;
+    let elementNode: HTMLElement | null = target;
+    while (elementNode && !elementNode.dataset.index) {
+      elementNode = elementNode.parentElement;
+    }
+  
+    if (elementNode && elementNode.dataset.index !== undefined) {
+      const index = parseInt(elementNode.dataset.index, 10);
+      if (!isNaN(index) && index >= 0 && index < elements.length) {
+        const element = elements[index];
+        if (element?.type) {
+          setContextData(element); // pass into menu
+          show({
+            event: e,
+            props: { element },
+          });
+          return;
+        }
       }
     }
-
-    setContextMenuItems([
-      {
-        label: "Paste",
-        onSelect: handleContextPaste
-      }
-    ]);
-  }
+  
+    // fallback: blank canvas right-click
+    setContextData(null);
+    show({
+      event: e,
+      props: { element: null },
+    });
+  }  
 
   //async functions
   async function tryParseImage(blob: Blob): Promise<HTMLImageElement | null> {
@@ -215,58 +224,71 @@ export default function CanvasArea() {
       onDrop={handleDrop}
       onContextMenu={handleRightClick}
     >
-      <CustomContextMenu menuItems={contextMenuItems}>
-        {elements.map((element, i) => {
-          const { type, x, y, src, text, width, height, canvasWidth, canvasHeight, editing } = element;
+      {elements.map((element, i) => {
+        const { type, x, y, src, text, width, height, canvasWidth, canvasHeight, editing } = element;
 
-          const updateElement = (newProps: Partial<typeof element>) => {
-            setElements(prev => {
-              const updated = [...prev];
-              updated[i] = {
-                ...updated[i], 
-                ...newProps
-              };
-              return updated;
-            });
-          };
-          
-          return (
-            <DraggableBox
-              key={i}
-              x={x}
-              y={y}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-              editing={editing}
-              width={width}
-              height={height}
-              onResize={(newWidth, newHeight) => {
-                setElements((prev) => {
-                  const updated = [...prev];
-                  updated[i] = {
-                    ...updated[i],
-                    width: newWidth,
-                    height: newHeight,
-                  };
-                  return updated;
-                });
-              }}
-              data-index={i}
-            >
-            {(type && getElementDefinition(type)) 
-              ? renderContent(type, { 
-                src, 
-                text, 
-                width, 
-                height,
-                updateElement,
-                editing,
-              }) 
-            : null}
-          </DraggableBox>  
-          )
-        })}
-      </CustomContextMenu>
+        const updateElement = (newProps: Partial<typeof element>) => {
+          setElements(prev => {
+            const updated = [...prev];
+            updated[i] = {
+              ...updated[i], 
+              ...newProps
+            };
+            return updated;
+          });
+        };
+        
+        return (
+          <DraggableBox
+            key={i}
+            x={x}
+            y={y}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            editing={editing}
+            width={width}
+            height={height}
+            index={i}
+            onResize={(newWidth, newHeight) => {
+              setElements((prev) => {
+                const updated = [...prev];
+                updated[i] = {
+                  ...updated[i],
+                  width: newWidth,
+                  height: newHeight,
+                };
+                return updated;
+              });
+            }}
+          >
+          {(type && getElementDefinition(type)) 
+            ? renderContent(type, { 
+              src, 
+              text, 
+              width, 
+              height,
+              updateElement,
+              editing,
+            }) 
+          : null}
+        </DraggableBox>
+        )
+      })}
+    <Menu id={MENU_ID}>
+      {(contextData?.type
+        ? getContextMenuItems(contextData.type, contextData)
+        : [
+            {
+              label: "Paste",
+              onSelect: handleContextPaste,
+            },
+          ]
+      ).map((item, index) => (
+        <Item key={index} onClick={item.onSelect}>
+          {item.label}
+        </Item>
+      ))}
+    </Menu>
     </div>
   );
 }

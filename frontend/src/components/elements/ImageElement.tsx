@@ -23,4 +23,5 @@ export const ImageElement: ElementDefinition = {
     ],
 };
 
+console.log('🟦 ImageElement registering...');
 registerElement("Image", ImageElement);

@@ -31,9 +31,8 @@ export const createDefaultElement = (
   };
 
 //helpers
-export function getElementLabel(type: string) {
-  const definition = getElementDefinition(type);
-  return definition !== undefined ? definition.label : "Unknown"
+export function getElementLabel(type: string): string {
+  return getElementDefinition(type)?.label ?? "Unknown";
 }
 
 export function isImageElement(type: string) {

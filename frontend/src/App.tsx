@@ -2,6 +2,7 @@ import './App.css';
 import './index.css'
 import Sidebar from './components/Sidebar';
 import CanvasArea from './components/CanvasArea';
+import './elementLoader';
 
 declare global {
   interface Window {
@@ -47,7 +48,7 @@ export default function App() {
   const handleSaveToCloud = () => {
     alert('Cloud saving not implemented yet.');
   };
-  
+
   return (
     <div className="flex flex-col h-screen w-screen">
       {/* Top Menu Bar */}

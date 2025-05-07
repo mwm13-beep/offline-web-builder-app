@@ -26,4 +26,5 @@ export const TextElement:ElementDefinition  = {
       ],
 };
 
+console.log('🟦 TextElement registering...');
 registerElement("Text", TextElement);

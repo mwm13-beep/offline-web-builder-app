@@ -1,6 +1,8 @@
 import { ElementDefinition } from "./elementTypes";
 
 const elementDefinitions: Record<string, ElementDefinition> = {};
+console.log('🧠 Registry initialized', elementDefinitions);
+(globalThis as any).elementRegistryIdentity = elementDefinitions;
 
 export function registerElement(type: string, definition: ElementDefinition) {
   elementDefinitions[type] = definition;

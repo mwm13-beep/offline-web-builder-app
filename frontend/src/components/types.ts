@@ -20,6 +20,7 @@ export type CanvasElementData = {
   editing: boolean;
   actionType?: string;
   actionParams?: any;
+  index: number;
 };
 
 //wrapper that allows canvas elements to be moved and resized

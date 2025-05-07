@@ -75,4 +75,5 @@ export const ButtonElement: ElementDefinition = {
     ],
   };
 
+  console.log('🟦 ButtonElement registering...');
   registerElement("Button", ButtonElement);

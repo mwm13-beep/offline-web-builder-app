@@ -3,7 +3,7 @@ import { ResizableBox } from 'react-resizable'
 import 'react-resizable/css/styles.css';
 import type { DraggableBoxProps } from "./types";
   
-export default function DraggableBox({ x, y, children, width, height, canvasWidth, canvasHeight, onResize }: DraggableBoxProps) {
+export default function DraggableBox({ x, y, children, width, height, canvasWidth, canvasHeight, onResize, index }: DraggableBoxProps) {
   const [position, setPosition] = useState({ x, y });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -58,7 +58,12 @@ export default function DraggableBox({ x, y, children, width, height, canvasWidt
         cursor: "grab",
       }}
     >
-      <div onMouseDown={onMouseDown} style={{ width: "100%", height: "100%" }}>
+      <div
+        className="draggable-box"
+        data-index={index}
+        onMouseDown={onMouseDown} 
+        style={{ width: "100%", height: "100%" }}
+        >
         {children}
       </div>
     </ResizableBox>
